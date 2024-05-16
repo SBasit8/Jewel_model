@@ -1,0 +1,6 @@
+Barcode : -
+SEASON: FALL
+SEASON_Year : 24
+Length : None
+Weight : 0
+DATE : None

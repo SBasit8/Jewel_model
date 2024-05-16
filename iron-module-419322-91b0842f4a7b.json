@@ -1,0 +1,13 @@
+{
+  "type": "service_account",
+  "project_id": "iron-module-419322",
+  "private_key_id": "91b0842f4a7bb1b01c22ee56bb6b3153522f74a0",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQCJTPdiuuBK6B9P\n9fNKfFr5lg6d5dliZk2V8t9srKiWBH3JfiU8TI7ZVWOB/rcMMa90GyJ+zfif30R/\n+c2YHVjJWmYil85EBRRJLMp4draWJqNn+Iy3/tFBZNlbBq8IjB7JzzrBKIPqZuno\n9vjcLe5VW2+htlGSlw3YrvVPRirJvyzp4ahiY9zX3N5hPTrhBBckQ/TqJIMmDxeS\n3PpOsBK0Mi2zPe372Q1bGlOBd5N8vCFxuKYTfWfEINfhatmNGJLiNAsWXOx2drj/\nr+zqbowjwi/xXXGrn9/8z90cNBRPbJ79/6hjBpoRCpp+uTkw64abtW8cNC5RtnSj\nbZTHvH19AgMBAAECggEABaJOI3PCKOi6AjS4OUX9kLDO5D1OjIpgpCbNcr7qAw/n\nnnlJ613D3diyZt7uIXa3eab0ZSosCdlmTO8R9+w6XLbUKpa6nNFtiewn2cYbS3GF\n8ooBMjqnWQzbm2/chlgDmmnhwhPYx+lVr1zVDOnolgGUxNi/o6mFpK7XO5vIPTOG\n75wOtdiDAkh8H/DeGvMTq1fuTuTuVKcVa6erupaXEaSZckexC/N6/UuGyjqq/yPC\nYXYn974vUPUOZfRyPuylwn/hC/tplH1tTUsrRgekSPjYjWKw4+pGDNZD+yBQCroc\nmG5Yq92cG/HReQ0cRNjQxSJ9nZQNnK8gBTxsVnZNkQKBgQC+f8WhjAvcsqTyOmit\nGOrgDqKavMRWMq/GKFiJ12Nms36VRAszZC/PCUDO8Qvhww7i5Ifg+FqDv6AOwwtB\ne4/kugHBpiSYzotjm0AMcsk9yYzjUoQ/5KAaQIdbWmRDD2/ogrxMNbjsmfy6vpSg\neem/aPuaclJKqAd1aP3TkXctzQKBgQC4gob+fkSwp33mEPvpfpduTfOiBIPHzJzg\nrxJulcdcnNna1/Ih73+mPsMFK6Niitc/JjYJQCb0YJ2AFIMI3Jet+fdz4lx+mP85\nn1ExuFyekO6jrVGKcLbPRKRi4IH05XF2DhTTB7LrK1WcRUN68nKMQQ0yWf+qtt6A\nxsgKPJBecQKBgHYbUbRu14vlVk6319457KUtbbLyBehLVJ9OtFYBrCcocfqpTSh3\nnQyHeB7VY8B85uXVOklIsRWt4NZGJtxad0Qf7qbZEyeKJvGCd5tAL3SXWTo3Frdm\nT7z29PS2fiL1lzRYmdXGGPjYH9DIB+3WqA18UUHYTxzqQHWSuoxJS9KhAoGAYGI3\nGJxnT4y/NL6siaXKfyGTYpBPMsENNkXeMAxn71Y0a6Cg6N9OZE6m232XRPPYSzGv\nypdLgh8yR2TvqmJpjcVlYZDe1ncf5D74UCvJnj+BmdkBHnuQ06c85DX5TS/KXGww\nrqh362dgulhoTsJ12hRlS2c+KjSK+ORePRK0K9ECgYAomMoYM2Ai5ARCvUj3QPzO\nfFpCk/lf8iLDjzLmo+55FrZidZohoLLSV2qsS4kiQzjRznxAumzbAQqkoXSx6rET\nPzPgvcF0xNtFvEu3I3k2rmYQh4rn06Xr3Jie5dFjeqTKTesg93lSAySC8DT5dFHa\ni9fzCbfnNnu3SwaC0gdM4Q==\n-----END PRIVATE KEY-----\n",
+  "client_email": "bernardomfg-scanocr@iron-module-419322.iam.gserviceaccount.com",
+  "client_id": "101345762094000760726",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/bernardomfg-scanocr%40iron-module-419322.iam.gserviceaccount.com",
+  "universe_domain": "googleapis.com"
+}

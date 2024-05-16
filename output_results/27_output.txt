@@ -1,0 +1,7 @@
+Barcode : 2402061644
+CATEGORY : ER
+SEASON: HOL
+SEASON_Year : 24
+Length : None
+Weight : 21.8
+DATE : 216124

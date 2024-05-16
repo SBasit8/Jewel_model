@@ -1,0 +1,8 @@
+Barcode : i
+Barcode : 2401251554
+SEASON: FALL
+SEASON: CHASE
+SEASON_Year : 24
+Length : 9
+Weight : 0
+DATE : None

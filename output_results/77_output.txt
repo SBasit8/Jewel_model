@@ -1,0 +1,6 @@
+Barcode : 011824
+CATEGORY : OTR
+SEASON: HOL
+Length : 3
+Weight : 23.3
+DATE : 124

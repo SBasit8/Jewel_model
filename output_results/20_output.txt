@@ -1,0 +1,3 @@
+Barcode : 2401291584
+SEASON: FALL
+SEASON_Year : 24
