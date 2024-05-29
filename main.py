@@ -14,31 +14,57 @@ import sys
 import numpy as np
 from fuzzywuzzy import fuzz
 import sqlite3
+from qreader import QReader
+
+
+def update_last_row_count(conn):
+   
+    cursor = conn.cursor()
+
+    # Get the id of the last row
+    cursor.execute('''SELECT MAX(rowid) FROM info''')
+    last_row_id = cursor.fetchone()[0]
+
+    # Update the count on the last row
+    cursor.execute('''UPDATE info SET count = count + 1 WHERE rowid = ?''', (last_row_id,))
+
+    # Commit the transaction
+    conn.commit()
+
+def scan(masked_image):
+    qreader = QReader()
+
+    # Use the detect_and_decode function to get the decoded QR data
+    decoded_text = qreader.detect_and_decode(image=masked_image)
+    print(decoded_text[0])
+    return decoded_text[0]
+
 
 
 def get_last_row_columns(conn):
     cursor = conn.cursor()
-    cursor.execute("SELECT * FROM info ORDER BY rowid DESC LIMIT 1 OFFSET 1")
+    cursor.execute("SELECT * FROM info ORDER BY rowid DESC LIMIT 1 ")
     row = cursor.fetchone()
     if row:
-        # Assuming 0-indexed columns
+       
         
         # Change the indices according to your table schema
-        print("returnnn karega ")
+        
         type_value = row[0]
         barcode_value = row[1]
+        count_value= row[2]
         conn.commit()
-        conn.close()
-        return type_value, barcode_value
-    return None, None
+        
+        return type_value, barcode_value,count_value
+    return None, None , None 
 
 
 
 def insert_in_db(conn,values):
 
     cursor=conn.cursor()
-    query='''INSERT INTO info (type ,barcode )
-            VALUES(?,?)'''
+    query='''INSERT INTO info (type ,barcode , count)
+            VALUES(?,?,?)'''
     cursor.execute(query,values)
     
 
@@ -52,7 +78,7 @@ def insert_in_db(conn,values):
     # cursor.close    
     conn.commit()
     
-    return cursor.lastrowid,values[0],values[1]
+    # return cursor.lastrowid,values[0],values[1],values[2]
 
 model = YOLO("jewelery_weight.pt") # model weights
 
@@ -150,10 +176,11 @@ def mask_image(img):
 
 
 #  results of predtiction and Bounding Boxes
+
+# last_back_barcode= None
 count=0
-last_back_barcode= None
 def prediction(image_path,output_dir,confidence,conn):
-    global last_back_barcode
+    global count 
     barcode_value=0
     filename,ext=os.path.splitext(image_path)
     if not (ext and (str(ext).lower() in [".png",".jpg",".jpeg"])):
@@ -170,7 +197,7 @@ def prediction(image_path,output_dir,confidence,conn):
       x=len(boxes)
       if x>1:
             type="FRONT"
-            last_back_barcode=None          
+            count=0         
             for box,cls,con in zip(boxes,classes,prob):
                 x1,y1,x2,y2=box
                 
@@ -245,51 +272,124 @@ def prediction(image_path,output_dir,confidence,conn):
 
 
                 ocr_text=detect_text(masked_image)
+              
             
-                if model.names[int(cls)]== 'jewelry':
-                   
+                if model.names[int(cls)]== 'jewelry':                 
                     
-            
-                    for text in ocr_text:                
-                        # print('\n"{}"'.format(text.description))
-                        # vertices = (['({},{})'.format(vertex.x, vertex.y)
-                        #             for vertex in text.bounding_poly.vertices])
-                                         
-                        
-                        # print('bounds: {}'.format(','.join(vertices)))
-                        txt=text.description
-                        txt=txt.replace(" ","")
-                        
-                        
-                        # ^\d{6,}$|?
-                        
+                    barcode_value=scan(masked_image)
+                    print(barcode_value)
 
-                        if len(txt)>=7:
+                    if not barcode_value:
+                        
+                        
+                        for text in ocr_text:                
+                    
+                            new_text=text.description.replace("BERNARDO","")
+                            new_text=new_text.replace("Bernardo","")
+                            new_text=new_text.replace("HandSample","")
+                            new_text=new_text.replace("In-HouseSample","")
+                            
+                            new_text=new_text.replace("Sample","")
+                            new_text=new_text.replace("Overseas","")
+                            new_text=new_text.replace("OverseasSample","")
+                            print("ppppppppppppp",new_text)
 
-                            print("TEXT AFTERRRRRRRR",txt)
-                            # print(txt)
-                            pattern =r"^(?!(?:\d+|[A-Za-z]+)$)[A-Za-z0-9-]{1,}(?:[A-Za-z0-9-]{1,}){0,3}$"    
-                                
-                            x=match_regex(pattern,txt)        
-                            # # # x = re.findall("^\d{6,}$|^(?!(?:\d+|[A-Za-z]+)$)[A-Za-z0-9-]{1,}(?:[A-Za-z0-9-]{1,}){0,3}$", txt)
-                            # # regex= re.compile(r"^\d{6,}$|^(?!(?:\d+|[A-Za-z]+)$)[A-Za-z0-9-]{1,}(?:[A-Za-z0-9-]{1,}){0,3}$")
-                            # srch =regex.search(txt)
-                            print("RE SEARCH KRKE DIA HOGA")
-                            print(x)
+                            if len(new_text)>=6:
+
+                                x = re.findall("^\d{6,}$|^(?!(?:\d+|[A-Za-z]+)$)[A-Za-z0-9-]{1,}(?:[A-Za-z0-9-]{1,}){0,3}$", new_text)
 
                             
+                                print(x)
+                                if x:
+                                    new_barcode_value = x[0]
+                                    barcode_found = False
+                                    
+                                    for i, entry in enumerate(output_text):
+                                        if entry.startswith("Barcode :"):
+                                            old_value = entry.split(":")[1]
+                                            output_text[i] = "{} {}".format(entry, new_barcode_value)
+                                            barcode_found = True
+                                            barcode_value=old_value+new_barcode_value
+                                            break
+                                    
+                                    if not barcode_found:
+                                        # output_text.append("Barcode : {}".format(new_barcode_value))
+                                        barcode_value=new_barcode_value
+                        
 
-
-
-                            
-
-                            if not len(x)==0:
-                                output_text.append("{} : {}".format("Barcode",x[0]))
-                                barcode_value =x[0]
-                                print(x[0]) 
-                            print(output_text)
+                    output_text.append("Barcode : {}".format(barcode_value))
                     filename=os.path.basename(image_path).split(".")[0]
                     cv2.imwrite(os.path.join(output_dir,f"{barcode_value}_CROP_{filename}.jpg"),crop)
+                    
+                    # for text in ocr_text:                
+                        
+
+                    #     new_text=text.description.replace("BERNARDO","")
+                    #     new_text=new_text.replace("Bernardo","")
+                    #     new_text=new_text.replace("HandSample","")
+                    #     new_text=new_text.replace("In-HouseSample","")
+                        
+                    #     new_text=new_text.replace("Sample","")
+                    #     new_text=new_text.replace("Overseas","")
+                    #     new_text=new_text.replace("OverseasSample","")
+                    #     print("ppppppppppppp",new_text)
+
+                    #     if len(new_text)>=6:
+
+                    #         x = re.findall("^\d{6,}$|^(?!(?:\d+|[A-Za-z]+)$)[A-Za-z0-9-]{1,}(?:[A-Za-z0-9-]{1,}){0,3}$", new_text)
+
+                           
+                    #         print(x)
+                    #         if x:
+                    #             new_barcode_value = x[0]
+                    #             barcode_found = False
+                                
+                    #             for i, entry in enumerate(output_text):
+                    #                 if entry.startswith("Barcode :"):
+                    #                     old_value = entry.split(":")[1]
+                    #                     output_text[i] = "{} {}".format(entry, new_barcode_value)
+                    #                     barcode_found = True
+                    #                     barcode_value=old_value+new_barcode_value
+                    #                     break
+                                
+                    #             if not barcode_found:
+                    #                 output_text.append("Barcode : {}".format(new_barcode_value))
+                    #                 barcode_value=new_barcode_value
+
+                            # found_barcode = None
+                            # barcodes = []
+
+                            # # Iterate through the list and process barcode entries
+                            # for item in output_text:
+                            #     if item.startswith('Barcode'):
+                            #         if found_barcode is None:
+                            #             found_barcode = item  # Store the first Barcode entry
+                            #         else:
+                            #             # Append the new Barcode value to the existing one
+                            #             found_barcode += ', ' + item.split(': ')[1]
+                            #     else:
+                            #         barcodes.append(item)  # Add non-barcode items to a separate list
+
+                            # # If a Barcode was found, insert it at the beginning of the list
+                            # if found_barcode:
+                            #     barcodes.insert(0, found_barcode)
+
+                            # output_text = barcodes
+
+                            
+                        
+
+
+                            
+
+                            # if not len(x)==0:
+                            #     output_text.append("{} : {}".format("Barcode",x[0]))
+                            #     barcode_value =x[0]
+                            #     # print(x[0]) 
+                            # print(output_text)
+                          
+                   
+                    
                             
                 else:
                     
@@ -362,78 +462,151 @@ def prediction(image_path,output_dir,confidence,conn):
             output_text.append("{} : {}".format("Weight",weight))   
             output_text.append("{} : {}".format("DATE",date)) 
 
-            values=(type,barcode_value)
+            values=(type,barcode_value,count)
             
             insert_in_db(conn,values)
-            print("FUNCIONNN RETURN VALUESSSS")
+            type_value, bar_code, count_value = get_last_row_columns(conn)
+           
             
 
 
       else:
         
         type="BACK"
+        print("backkkkkkkk")
         for box,cls,con in zip(boxes,classes,prob):
                 x1,y1,x2,y2=box
                 
                 crop=image[int(y1):int(y2),int(x1):int(x2)]
                 masked_image=crop.copy()
+                barcode_value=scan(masked_image)
+                
+                if not barcode_value:
+                    
+                    for text in ocr_text:                
+                    
+                            new_text=text.description.replace("BERNARDO","")
+                            new_text=new_text.replace("Bernardo","")
+                            new_text=new_text.replace("HandSample","")
+                            new_text=new_text.replace("In-HouseSample","")
+                            
+                            new_text=new_text.replace("Sample","")
+                            new_text=new_text.replace("Overseas","")
+                            new_text=new_text.replace("OverseasSample","")
+                            print("ppppppppppppp",new_text)
 
-                ocr_text=detect_text(masked_image)
-                for text in ocr_text:
-                    # print('\n"{}"'.format(text.description))
-                    # vertices = (['({},{})'.format(vertex.x, vertex.y)
-                    #             for vertex in text.bounding_poly.vertices])
+                            if len(new_text)>=6:
 
-                    # print('bounds: {}'.format(','.join(vertices)))
-                    if len(text.description)>=10:
-                        x = re.findall("^\d{6,}$", text.description)
+                                x = re.findall("^\d{6,}$|^(?!(?:\d+|[A-Za-z]+)$)[A-Za-z0-9-]{1,}(?:[A-Za-z0-9-]{1,}){0,3}$", new_text)
 
-                        if not len(x)==0:
-                            output_text.append("{} : {}".format("Barcode",x[0]))
-                            barcode_value =x[0]
-                            print(x[0]) 
-                        print(output_text)
+                            
+                                print(x)
+                                if x:
+                                    new_barcode_value = x[0]
+                                    barcode_found = False
+                                    
+                                    for i, entry in enumerate(output_text):
+                                        if entry.startswith("Barcode :"):
+                                            old_value = entry.split(":")[1]
+                                            output_text[i] = "{} {}".format(entry, new_barcode_value)
+                                            barcode_found = True
+                                            barcode_value=old_value+new_barcode_value
+                                            break
+                                    
+                                    if not barcode_found:
+                                        # output_text.append("Barcode : {}".format(new_barcode_value))
+                                        barcode_value=new_barcode_value
+                        
+
+                    output_text.append("Barcode : {}".format(barcode_value))
+                    filename=os.path.basename(image_path).split(".")[0]
+                    cv2.imwrite(os.path.join(output_dir,f"{barcode_value}_CROP_{filename}.jpg"),crop)
+
+                
+                output_text.append("Barcode : {}".format(barcode_value))
+
+                
+
+
+
+
+                # ocr_text=detect_text(masked_image)
+                # for text in ocr_text:
+                #     new_text=text.description.replace("BERNARDO","")
+                #     new_text=new_text.replace("Bernardo","")
+                #     new_text=new_text.replace("HandSample","")
+                #     new_text=new_text.replace("In-HouseSample","")
+                    
+                #     new_text=new_text.replace("Sample","")
+                #     new_text=new_text.replace("Overseas","")
+                #     new_text=new_text.replace("OverseasSample","")
+
+                #     print("lolololololo",new_text)
+                #     if len(new_text)>=6:
+                #         x = re.findall("^\d{6,}$|^(?!(?:\d+|[A-Za-z]+)$)[A-Za-z0-9-]{1,}(?:[A-Za-z0-9-]{1,}){0,3}$", new_text)
+                #         print("xxxxxxx",x)
+                #         if x:
+                #             print("TRUEEEE")
+                #             new_barcode_value = x[0]
+                #             barcode_found = False
+                            
+                #             for i, entry in enumerate(output_text):
+                #                 if entry.startswith("Barcode :"):
+                #                     old_value = entry.split(":")[1]
+                #                     print("oooooldddddddd",old_value)
+                #                     output_text[i] = "{} {}".format(entry, new_barcode_value)
+                #                     barcode_found = True
+                #                     barcode_value=old_value+new_barcode_value
+                #                     break
+                            
+                #             if not barcode_found:
+                #                 output_text.append("Barcode : {}".format(new_barcode_value))
+                #                 barcode_value=new_barcode_value
+
+                        # if not len(x)==0:
+                        #     output_text.append("{} : {}".format("Barcode",x[0]))
+                        #     barcode_value =x[0]
+                        #     # print(x[0]) 
+                        # print(output_text)
+                
         
-        values=(type,barcode_value)
-        insert_in_db(conn,values)
-        type_value, bar_code = get_last_row_columns(conn)
         
-        print("FUNCIONNN RETURN VALUESSSS")
+        print(output_text)
+        type_value, bar_code, count_value = get_last_row_columns(conn)
+        
        
 
-        print(type_value)
-        print(bar_code)
-
+      
         
         if type_value == "BACK"  and  barcode_value == bar_code :
-            count=+1
-            print("SAME picture uploaded ")
+            # print(count_value)
+            count_value+=1
+            # print(count_value)
+            values=(type,barcode_value,count_value)
+
+            insert_in_db(conn,values)
+            # update_last_row_count(conn)
+            _,_,count_val=get_last_row_columns(conn)
+            
+            print("SAME Picture Uploaded ")
             filename = os.path.basename(image_path)
-            output_path=os.path.join(output_dir,f"{barcode_value}_BACK-{count}_"+ filename )
+            output_path=os.path.join(output_dir,f"{barcode_value}_BACK-{count_val}_"+ filename )
             cv2.imwrite(output_path,image)
-        # filename = os.path.basename(image_path)
-        # filename_parts = filename.split("_")
-        # if len(filename_parts) == 3 and filename_parts[-2] == "BACK":
-        #     # Increment the sequence number
-        #     sequence_number = int(filename_parts[-1].split(".")[0]) + 1
-        #     new_filename = f"BACK_{sequence_number}.jpg"
-        #     output_path = os.path.join(output_dir, new_filename)
-        #     os.rename(os.path.join(output_dir, filename), output_path)
-        #     cv2.imwrite(output_path,image)
+       
         else:
             # Reset the sequence number if the barcode is different
             filename=os.path.basename(image_path)
             output_path=os.path.join(output_dir,f"{barcode_value}_BACK_"+ filename )
             cv2.imwrite(output_path,image)
-            last_back_barcode = barcode_value
+            # last_back_barcode = barcode_value
             count=0
+            values=(type,barcode_value,count)
 
-        # values=(type,barcode_value)
-        # insert_in_db(conn,values)
+            insert_in_db(conn,values)
+            get_last_row_columns(conn)
+
+
         
-       
-        # last_row_id,TP,bar=
-
         
         
         
@@ -475,17 +648,23 @@ def prediction(image_path,output_dir,confidence,conn):
       with open(f"{output_path}_output.txt",'w',encoding="utf-8") as file:
           for i in output_text:
             file.write(str(i) + '\n')
+
+
+    return output_path,output_text
+
+
           
 
 # Main function taking image path/folder and desired Output dir 
     
-def main(image_path=r"Input_images\88.jpg",output_dir = r"output_results",confidence=0.7):
+def main(image_path="Input_images",output_dir = r"output_results",confidence=0.7):
 
     conn=sqlite3.connect("Data.db")
     cursor=conn.cursor()
+    
 
     cursor.execute('''CREATE TABLE IF NOT EXISTS info
-                   (type TEXT,barcode TEXT)''')
+                   (type TEXT,barcode TEXT,count INTEGER)''')
     conn.commit()
     
 
@@ -505,17 +684,19 @@ def main(image_path=r"Input_images\88.jpg",output_dir = r"output_results",confid
 
     # if it is file(image)
     if os.path.isfile(image_path):
-        prediction(image_path,output_dir,confidence,conn)
+        ot_path , ot_text = prediction(image_path,output_dir,confidence,conn)
     # if it is dir then iterate each folder and file
     elif os.path.isdir(image_path):
         for root,_,files in os.walk(image_path):
             for file in files:
                 
                 full_path=os.path.join(root,file)
-                prediction(full_path,output_dir,confidence,conn)   
+                ot_path , ot_text = prediction(full_path,output_dir,confidence,conn)   
 
     else:
         print('Invalid file or Path !')    
+
+    return ot_path , ot_text     
 
     
 

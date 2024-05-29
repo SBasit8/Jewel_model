@@ -1,0 +1,85 @@
+<!-- <!DOCTYPE html>
+<html>
+  <body>
+    <h1>OCR results on documents</h1>
+    <form method="post" id="myForm">
+      <label for="taskname" style="font-size: 20px">Search:</label><br />
+      <input type="text" name="search" id="taskname" /><br />
+      <input id="image" type="file" name="file" />
+
+      <p style="display: inline"><b>* Cannot be null</b></p>
+      <br /><br />
+      <input type="button" value="Search" onclick="submitForm()" />
+    </form>
+    <form
+      action="download-csv"
+      enctype="multipart/form-data"
+      method="post"
+      autocomplete="off"
+    >
+      <input type="submit" value="Download CSV File" />
+    </form>
+
+    <div id="responseArea"></div>
+    <script>
+      function submitForm() {
+        var formElement = document.getElementById("myForm");
+        var data = new FormData(formElement);
+        fetch("/filesend", {
+          method: "POST",
+          body: data,
+        })
+          .then((resp) => resp.text()) // or, resp.json(), etc.
+          .then((data) => {
+            document.getElementById("responseArea").innerHTML = data;
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      }
+    </script>
+  </body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>OCR results on documents</h1>
+    <form method="post" id="myForm" enctype="multipart/form-data">
+      <!-- <label for="taskname" style="font-size: 20px">Search:</label><br /> -->
+      <!-- <input type="text" name="search" id="taskname" /><br /> -->
+      <input id="image" type="file" name="file" required/>
+
+      <p style="display: inline"><b>* Cannot be null</b></p>
+      <br /><br />
+      <input type="button" value="Search" onclick="submitForm()" />
+    </form>
+    <!-- <form
+      action="/download-csv"
+      enctype="multipart/form-data"
+      method="post"
+      autocomplete="off"
+    >
+      <input type="submit" value="Download CSV File" />
+    </form> -->
+
+    <div id="responseArea"></div>
+    <script>
+      function submitForm() {
+        var formElement = document.getElementById("myForm");
+        var data = new FormData(formElement);
+        fetch("/filesend", {
+          method: "POST",
+          body: data,
+        })
+          .then((resp) => resp.text()) // or, resp.json(), etc.
+          .then((data) => {
+            document.getElementById("responseArea").innerHTML = data;
+          })
+          .catch((error) => {
+            console.error(error);
+          });
+      }
+    </script>
+  </body>
+</html>
