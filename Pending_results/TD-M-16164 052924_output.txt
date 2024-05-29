@@ -1,0 +1,6 @@
+Barcode : TD-M-16164 052924
+DATE : 524
+SEASON: HOL
+SEASON_Year : 24
+Length : None
+Weight : 2

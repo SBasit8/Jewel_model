@@ -1,0 +1,6 @@
+Length : None
+Weight : 2
+Barcode : 2405293371
+DATE : 524
+SEASON: HOL
+SEASON_Year : 24

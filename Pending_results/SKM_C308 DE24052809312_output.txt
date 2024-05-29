@@ -1,0 +1,6 @@
+DATE : 5/28/24
+SEASON: SUM
+SEASON_Year : 25
+Length : None
+Weight : 0
+Barcode : JUD4105 052824

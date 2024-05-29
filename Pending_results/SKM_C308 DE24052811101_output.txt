@@ -1,0 +1,6 @@
+DATE : 5/24
+SEASON: HOL
+SEASON_Year : 24
+Length : 7.5
+Weight : 70
+Barcode : 2405293370

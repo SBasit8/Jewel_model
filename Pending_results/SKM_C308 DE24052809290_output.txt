@@ -1,0 +1,5 @@
+Barcode : TDFW2393 052824
+Length : None
+Weight : 2
+Length : None
+Weight : 0

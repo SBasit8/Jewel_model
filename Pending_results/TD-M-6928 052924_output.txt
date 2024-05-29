@@ -1,0 +1,6 @@
+Barcode : TD-M-6928 052924
+Length : None
+Weight : 2
+DATE : 5129124
+SEASON: HOL
+SEASON_Year : 24

@@ -1,0 +1,6 @@
+Barcode : TD-FW-4924-1 052924
+Length : None
+Weight : 2
+DATE : 5/24
+SEASON: HOL
+SEASON_Year : 24

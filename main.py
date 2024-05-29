@@ -200,12 +200,13 @@ def prediction(image_path,output_dir,confidence,conn):
             count=0         
             for box,cls,con in zip(boxes,classes,prob):
                 x1,y1,x2,y2=box
-                
+
                 crop=image[int(y1):int(y2),int(x1):int(x2)]
            
 
                 if model.names[int(cls)]!= 'jewelry':
                     masked_image=mask_image(crop) 
+                    
 
                     if model.names[int(cls)] == 'config_1':
 
@@ -248,11 +249,17 @@ def prediction(image_path,output_dir,confidence,conn):
                                     
                                     weight=text.description
                                     print(weight)
-                    else:
 
+                        output_text.append("{} : {}".format("Length",length)) 
+                        output_text.append("{} : {}".format("Weight",weight)) 
+
+
+                    else:
+                        print("DATETETETETETETETETETE")
                         sim_ocr=crop.copy()
                         config_ocr=detect_text(sim_ocr)
                         date=None
+                        print("POPO))))))))")
 
                         for text in config_ocr:
 
@@ -261,11 +268,15 @@ def prediction(image_path,output_dir,confidence,conn):
                             #             for vertex in text.bounding_poly.vertices])
                         
                             d=re.findall('^\d.*24$',text.description)
+                            print("DDDDDDDDDDDDD",d)
 
                             if not len(d)==0:
+                                print("IKIIKIOLOLKKKKKKKKKKKKKKKKKK")
                                 date=text.description
+                         
                                 print(date)
-                                
+
+                        output_text.append("{} : {}".format("DATE",date))      
                 else:
                     masked_image=crop.copy()
 
@@ -457,10 +468,14 @@ def prediction(image_path,output_dir,confidence,conn):
             output_path=os.path.join(output_dir,f"{barcode_value}_FRONT_"+ filename )
             cv2.imwrite(output_path,image) 
 
+        
 
-            output_text.append("{} : {}".format("Length",length))    
-            output_text.append("{} : {}".format("Weight",weight))   
-            output_text.append("{} : {}".format("DATE",date)) 
+            #     output_text.append("{} : {}".format("Length",length))    
+          
+            #     output_text.append("{} : {}".format("Weight",weight))    
+       
+            #     output_text.append("{} : {}".format("Date",date))    
+         
 
             values=(type,barcode_value,count)
             
@@ -606,41 +621,20 @@ def prediction(image_path,output_dir,confidence,conn):
             get_last_row_columns(conn)
 
 
-        
-        
-        
-        
-        # filename=os.path.basename(image_path)
-        # output_path=os.path.join(output_dir,f"{barcode_value}_BACK_"+ filename )
-        # cv2.imwrite(output_path,image)
 
-        # type_value, bar_code = get_last_row_columns(conn)
-
-        # if type_value == "BACK"  and  barcode_value == bar_code :
-        #     count=+1
-        #     print("SAME picture uploaded ")
-        #     filename = os.path.basename(image_path)
-        #     output_path=os.path.join(output_dir,f"{barcode_value}_BACK_{count}"+ filename )
-        #     cv2.imwrite(output_path,image)
-            
-        # else:
-        #     filename = os.path.basename(image_path)
-        #     output_path=os.path.join(output_dir,f"{barcode_value}_BACK_"+ filename)
-        #     cv2.imwrite(output_path,image)
-        #     count=0
-            
 
 
        
 
-        
-        # filename=os.path.basename(image_path)
-        # output_path=os.path.join(output_dir,f"{barcode_value}_BACK_"+ filename )
-        # cv2.imwrite(output_path,image)
       
       print(output_text)
 
-           
+    #   filename=os.path.basename(image_path)
+    #   output_path=os.path.join(output_dir,filename)  
+    #   cv2.imwrite(output_path,image)
+    #   print("image saved")   
+      
+        
       filename=os.path.basename(image_path).split('.')[0]
       output_path=os.path.join(output_dir,filename)
       
@@ -657,7 +651,7 @@ def prediction(image_path,output_dir,confidence,conn):
 
 # Main function taking image path/folder and desired Output dir 
     
-def main(image_path="Input_images",output_dir = r"output_results",confidence=0.7):
+def main(image_path="Pending",output_dir = r"Pending_results",confidence=0.7):
 
     conn=sqlite3.connect("Data.db")
     cursor=conn.cursor()

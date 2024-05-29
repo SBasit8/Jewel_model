@@ -1,0 +1,5 @@
+Barcode : JUD4106 052824
+Length : None
+Weight : 0
+DATE : 5/28/24
+SEASON_Year : 25

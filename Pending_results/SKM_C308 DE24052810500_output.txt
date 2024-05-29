@@ -1,0 +1,6 @@
+Length : None
+Weight : 2
+DATE : 129/24
+SEASON: HOL
+SEASON_Year : 24
+Barcode : JUD2588 052924

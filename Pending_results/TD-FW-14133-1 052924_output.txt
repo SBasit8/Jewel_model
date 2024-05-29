@@ -1,0 +1,6 @@
+Barcode : TD-FW-14133-1 052924
+DATE : 5/24
+SEASON: HOL
+SEASON_Year : 24
+Length : None
+Weight : 7

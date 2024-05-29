@@ -1,0 +1,6 @@
+Barcode : JUD3006X 052924
+Length : None
+Weight : 24.6
+DATE : 5129124
+SEASON: HOL
+SEASON_Year : 24

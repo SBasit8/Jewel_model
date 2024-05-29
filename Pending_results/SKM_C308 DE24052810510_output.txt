@@ -1,0 +1,6 @@
+Barcode : TD-M-23006 052924
+Length : None
+Weight : 2
+DATE : 29/24
+SEASON: HOL
+SEASON_Year : 24
