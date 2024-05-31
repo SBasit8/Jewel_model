@@ -1,5 +1,7 @@
 Length : None
 Weight : 22.8
+CATEGORY : ER
+DESIGNER : OS
 Barcode : 2405293372
 DATE : 5129124
 SEASON: HOL

@@ -3,4 +3,5 @@ SEASON: HOL
 SEASON_Year : 24
 Length : 7.5
 Weight : 70
+CATEGORY : BR
 Barcode : 2405293370

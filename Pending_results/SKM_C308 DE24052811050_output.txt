@@ -1,5 +1,6 @@
 Length : None
 Weight : 2
+CATEGORY : ER
 Barcode : LUN2029X 052924
 DATE : 524
 SEASON: HOL

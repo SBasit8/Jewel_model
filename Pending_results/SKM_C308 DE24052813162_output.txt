@@ -1,6 +1,8 @@
 Barcode : TDHX0787/A 052824
 Length : None
 Weight : 0
+CATEGORY : HAIR
+DESIGNER : OS
 DATE : 128124
 SEASON: HOL
 SEASON_Year : 24

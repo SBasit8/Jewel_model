@@ -3,4 +3,6 @@ SEASON: HOL
 SEASON_Year : 24
 Length : None
 Weight : 0
+CATEGORY : ER
+DESIGNER : OS
 Barcode : EHM2463 052924

@@ -1,6 +1,7 @@
 Barcode : 2405293369
 Length : 17.5
 Weight : 2
+CATEGORY : NK
 DATE : 5129124
 SEASON: HOL
 SEASON_Year : 24

@@ -1,6 +1,7 @@
 Barcode : TD-FW-14103 052924
 Length : None
 Weight : 2
+CATEGORY : ER
 DATE : 5124
 SEASON: HOL
 SEASON_Year : 24
