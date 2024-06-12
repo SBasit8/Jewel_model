@@ -748,7 +748,7 @@ def prediction(image_path,output_dir,confidence,conn):
 
 # Main function taking image path/folder and desired Output dir 
     
-def main(image_path="Pending",output_dir = r"Pending_results",confidence=0.7,excel_file_name="output_data.xlsx"):
+def main(image_path,output_dir,confidence=0.7,excel_file_name="output_data.xlsx"):
 
     conn=sqlite3.connect("Data.db")
     cursor=conn.cursor()
@@ -810,7 +810,7 @@ def main(image_path="Pending",output_dir = r"Pending_results",confidence=0.7,exc
 
 
 
-main()
+# main()
 
 # # if __name__ == "__main__":
 # #     parser=argparse.ArgumentParser(description="Predction model")

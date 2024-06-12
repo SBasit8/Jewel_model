@@ -1,0 +1,5 @@
+Length : None
+Weight : 0
+CATEGORY : OTR
+DATE : 124
+Barcode : 2401181517X

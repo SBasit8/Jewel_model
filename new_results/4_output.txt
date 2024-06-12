@@ -1,0 +1,7 @@
+Barcode : 2401251549
+Length : 55
+Weight : 37
+CATEGORY : BR
+DATE : 125124
+SEASON: FALL
+SEASON_Year : 24

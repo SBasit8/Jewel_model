@@ -1,0 +1,8 @@
+Length : None
+Weight : 0
+CATEGORY : OTR
+DESIGNER : OS
+Barcode : EEV1255 020724
+DATE : None
+SEASON: FALL
+SEASON_Year : 24

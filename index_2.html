@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h1>OCR results on documents</h1>
+    <form method="post" id="myForm" enctype="multipart/form-data" action="/filesend">
+      <input id="image" type="file" name="files" multiple required />
+      <p style="display: inline"><b>* Cannot be null</b></p>
+      <br /><br />
+      <input type="submit" value="Upload" />
+    </form>
+    <div id="responseArea"></div>
+  </body>
+</html>

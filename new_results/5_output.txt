@@ -1,0 +1,6 @@
+Length : 55
+Weight : 56.4
+CATEGORY : BR
+Barcode : 2401251550
+DATE : 125/24
+SEASON: FALL

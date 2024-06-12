@@ -1,0 +1,8 @@
+Length : 9
+Weight : 0
+CATEGORY : BR
+Barcode : 2401251554
+DATE : None
+SEASON: FALL
+SEASON: CHASE
+SEASON_Year : 24

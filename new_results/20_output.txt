@@ -1,0 +1,6 @@
+Length : None
+Weight : 37.6
+Barcode : 2401291584
+DATE : 127124
+SEASON: FALL
+SEASON_Year : 24

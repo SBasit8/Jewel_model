@@ -43,7 +43,7 @@ def lambda_handler(request: Request,file: UploadFile):
         try:
             print(file.content_type)
             if file.content_type=='image/jpeg':
-                ot_path , ot_text = main(path, output_dir = r"output_results",confidence=0.7)
+                ot_path , ot_text = main(path, output_dir = r"new_results",confidence=0.7)
                 print(ot_path,ot_text)
               
 
