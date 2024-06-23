@@ -22,7 +22,7 @@ def index():
   <body>
     <h1>OCR results on documents</h1>
     <form method="post" id="myForm" enctype="multipart/form-data" action="/filesend">
-      <input id="image" type="file" name="files" multiple required/>
+      <input id="image" type="file" name="files" multiple required accept="image/*"/>
 
       <p style="display: inline"><b>* Cannot be null</b></p>
       <br /><br />
@@ -56,6 +56,8 @@ def index():
 @app.route('/filesend', methods=['POST'])
 def upload_files():
     try:
+        ot_path=""
+        ot_text=""
         if 'files' not in request.files:
             flash('No file part')
             return redirect(request.url)
@@ -82,7 +84,7 @@ def upload_files():
                 try:
                     # Process the file
                     if file.content_type == 'image/jpeg':
-                        ot_path, ot_text = main(file_path, output_dir="new_results", confidence=0.7)
+                        ot_path, ot_text= main(file_path, output_dir="new_results", confidence=0.7)
                         results.append((ot_path, ot_text))
                     else:
                         results.append(("Error", f"Unsupported file type: {file.content_type}"))

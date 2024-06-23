@@ -1,0 +1,16 @@
+2024-06-22 21:57:40,780 - INFO - 127.0.0.1 - - [22/Jun/2024 21:57:40] "POST /filesend HTTP/1.1" 200 -
+2024-06-22 21:59:08,638 - INFO - 127.0.0.1 - - [22/Jun/2024 21:59:08] "GET / HTTP/1.1" 200 -
+2024-06-22 21:59:41,910 - INFO - 127.0.0.1 - - [22/Jun/2024 21:59:41] "POST /filesend HTTP/1.1" 200 -
+2024-06-22 22:00:45,320 - INFO -  * Detected change in 'C:\\Users\\basit\\anaconda3\\Lib\\site-packages\\_pytest\\cacheprovider.py', reloading
+2024-06-22 22:00:45,343 - INFO -  * Detected change in 'C:\\Users\\basit\\anaconda3\\Lib\\site-packages\\_pytest\\fixtures.py', reloading
+2024-06-22 22:00:45,403 - INFO -  * Detected change in 'C:\\Users\\basit\\anaconda3\\Lib\\site-packages\\_pytest\\config\\__init__.py', reloading
+2024-06-22 22:00:45,443 - INFO -  * Detected change in 'C:\\Users\\basit\\anaconda3\\Lib\\site-packages\\_pytest\\capture.py', reloading
+2024-06-22 22:00:45,490 - INFO -  * Detected change in 'C:\\Users\\basit\\anaconda3\\Lib\\site-packages\\_pytest\\doctest.py', reloading
+2024-06-22 22:00:45,549 - INFO -  * Detected change in 'C:\\Users\\basit\\anaconda3\\Lib\\site-packages\\_pytest\\junitxml.py', reloading
+2024-06-22 22:00:45,604 - INFO -  * Detected change in 'C:\\Users\\basit\\anaconda3\\Lib\\site-packages\\_pytest\\legacypath.py', reloading
+2024-06-22 22:00:45,670 - INFO -  * Detected change in 'C:\\Users\\basit\\anaconda3\\Lib\\site-packages\\_pytest\\logging.py', reloading
+2024-06-22 22:00:45,722 - INFO -  * Detected change in 'C:\\Users\\basit\\anaconda3\\Lib\\site-packages\\_pytest\\monkeypatch.py', reloading
+2024-06-22 22:00:45,737 - INFO -  * Detected change in 'C:\\Users\\basit\\anaconda3\\Lib\\site-packages\\_pytest\\recwarn.py', reloading
+2024-06-22 22:00:45,749 - INFO -  * Detected change in 'C:\\Users\\basit\\anaconda3\\Lib\\site-packages\\_pytest\\tmpdir.py', reloading
+2024-06-22 22:28:57,215 - INFO - 127.0.0.1 - - [22/Jun/2024 22:28:57] "POST /filesend HTTP/1.1" 200 -
+2024-06-22 22:40:41,500 - INFO -  * Detected change in 'C:\\Users\\basit\\Desktop\\vs_code\\jewlery-ai\\lambda.py', reloading

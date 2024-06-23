@@ -1,0 +1,8 @@
+DATE : 5/28/24
+SEASON: SUM
+SEASON_Year : 25
+Length : None
+Weight : 0
+CATEGORY : BR
+DESIGNER : OS
+Barcode : JUD4107 052824

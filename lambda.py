@@ -26,6 +26,7 @@ async def read_index():
 @app.post("/filesend")
 def lambda_handler(request: Request,file: UploadFile):
     path = f"./temp/{file.filename}"
+    ot_path=""
     
     with open(path, "wb+") as file_object:
 

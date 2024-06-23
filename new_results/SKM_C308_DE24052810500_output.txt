@@ -1,0 +1,8 @@
+Length : None
+Weight : 2
+CATEGORY : ER
+DESIGNER : OS
+DATE : 129/24
+SEASON: HOL
+SEASON_Year : 24
+Barcode : JUD2588 052924

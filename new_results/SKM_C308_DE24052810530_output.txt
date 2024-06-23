@@ -1,0 +1,8 @@
+Barcode : ECT0261 052924
+DATE : 5129/24
+SEASON: HOL
+SEASON_Year : 24
+Length : None
+Weight : 2
+CATEGORY : ER
+DESIGNER : OS

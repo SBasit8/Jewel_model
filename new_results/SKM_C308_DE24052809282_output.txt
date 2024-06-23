@@ -1,0 +1,8 @@
+Barcode : TDFW2394 052824
+DATE : None
+SEASON: SUM
+SEASON_Year : 25
+Length : None
+Weight : 2
+CATEGORY : HAIR
+CATEGORY : HAIR

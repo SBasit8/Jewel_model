@@ -1,4 +1,5 @@
 import os
+import shutil
 import cv2
 from ultralytics import YOLO
 from uuid import uuid4
@@ -16,6 +17,53 @@ from fuzzywuzzy import fuzz
 import sqlite3
 from qreader import QReader
 import pandas as pd
+import logging
+
+def setup_logging(msg, image_path, error_dir="ERRORS"):
+    # Create the error logging directory if it doesn't exist
+    os.makedirs(error_dir, exist_ok=True)
+    
+    destination_path = os.path.join(error_dir, os.path.basename(image_path))
+    
+    # Copy the image file from the source to the destination
+    shutil.copy(image_path, destination_path)
+
+    excel_file_name = 'error.xlsx'
+    excel_file_path = os.path.join(error_dir, excel_file_name)
+    
+    # Create a new DataFrame for the current error
+    new_error_df = pd.DataFrame([
+        {
+            "image_path": destination_path,
+            "error_message": msg
+        }
+    ])
+    
+    if os.path.exists(excel_file_path):
+        # If the Excel file exists, load the existing data
+        existing_df = pd.read_excel(excel_file_path, sheet_name='Errors')
+        # Append the new error to the existing DataFrame
+        combined_df = pd.concat([existing_df, new_error_df], ignore_index=True)
+    else:
+        # If the Excel file does not exist, start with the new error
+        combined_df = new_error_df
+    
+    # Write the combined DataFrame to the Excel file
+    with pd.ExcelWriter(excel_file_path, engine='openpyxl') as writer:
+        combined_df.to_excel(writer, sheet_name='Errors', index=False)
+
+    # save error in excel file :TODO
+    
+
+
+
+    # Configure logging
+    logging.basicConfig(filename=os.path.join(error_dir, 'error.log'),
+                        level=logging.ERROR,
+                        format='%(asctime)s - %(levelname)s - %(message)s')
+
+    print(f"Error logging directory set up at: {error_dir}")
+
 
 
 def update_last_row_count(conn):
@@ -40,20 +88,6 @@ def scan(masked_image):
     print(decoded_text[0])
     return decoded_text[0]
 
-
-# def insert_in_db_details_season_year(conn, val):
-#     cursor = conn.cursor()
-#     query = '''INSERT INTO details (Season_Year) VALUES (?)'''
-#     cursor.execute(query,val)
-#     conn.commit()
-
-# def insert_in_db_details_season(conn, val):
-#     cursor = conn.cursor()
-#     query = '''INSERT INTO details (Season) VALUES (?)'''
-#     cursor.execute(query,(val,))
-#     conn.commit()    
-
-
 def get_last_row_columns(conn):
     cursor = conn.cursor()
     cursor.execute("SELECT * FROM info ORDER BY rowid DESC LIMIT 1 ")
@@ -77,6 +111,7 @@ def insert_in_db_details(conn,val):
             VALUES(?,?,?,?,?,?,?,?) '''
     cursor.execute(query,val)
     print("Values inserted in details Table")
+    conn.commit()
     
 
 def insert_in_db(conn,values):
@@ -235,510 +270,416 @@ def prediction(image_path,output_dir,confidence,conn):
     barcode_value=0
     output_path,output_text="",""
     filename,ext=os.path.splitext(image_path)
-    if not (ext and (str(ext).lower() in [".png",".jpg",".jpeg"])):
-        return "","invalid extension"
-    image=cv2.imread(image_path)
-    results = model.predict(image, conf=confidence)
-    if results:
-        boxes = results[0].boxes.xyxy.cpu().numpy()
-        classes = results[0].boxes.cls.cpu()
-        prob = results[0].boxes.conf.cpu()
-        output_text= []
+    
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+    
+    try:
+        if not (ext and (str(ext).lower() in [".png",".jpg",".jpeg"])):
+            
+            # setup_logging(image,)
 
-      
-      
-        x=len(boxes)
-        if x==0:
-            return "","Empty Image"
-        else:
-            if x>1:
-                    type="FRONT"
-                    count=0 
-                    sesn=None
-                    yr=None 
-                    date=None
-                    length=None
-                    weight=None
-                    category=None
-                    desi=None
+            return "","invalid extension"
+        image=cv2.imread(image_path)
+        results = model.predict(image, conf=confidence)
+        if results:
+            boxes = results[0].boxes.xyxy.cpu().numpy()
+            classes = results[0].boxes.cls.cpu()
+            prob = results[0].boxes.conf.cpu()
+            output_text= []
 
-                    for box,cls,con in zip(boxes,classes,prob):
-                        x1,y1,x2,y2=box
 
-                        crop=image[int(y1):int(y2),int(x1):int(x2)]
+
+            x=len(boxes)
+            if x==0:
+
                 
+                return "","Empty Image"
+            else:
+                if x>1:
+                        type="FRONT"
+                        count=0 
+                        sesn=None
+                        yr=None 
+                        date=None
+                        length=None
+                        weight=None
+                        category=None
+                        desi=None
 
-                        if model.names[int(cls)]!= 'jewelry':
-                            masked_image=mask_image(crop) 
-                            
+                        for box,cls,con in zip(boxes,classes,prob):
+                            x1,y1,x2,y2=box
 
-                            if model.names[int(cls)] == 'config_1':
-
-
-                            
-                                sim_ocr=crop.copy()
-                            
-                                config_ocr=detect_text(sim_ocr) 
-                                weight=0 
-                                length=None  
-                                for text in config_ocr:
-
-                                    # print('\n"{}"'.format(text.description))
-                                    vertices = (['({},{})'.format(vertex.x, vertex.y)
-                                                for vertex in text.bounding_poly.vertices])
-                                    
-                                    # print(type(vertices))
-                                    wx = [vertex.x for vertex in text.bounding_poly.vertices]
-                                    wy = [vertex.y for vertex in text.bounding_poly.vertices]
-                                    
-                                    
-
-                                                    
-                                    # print('bounds: {}'.format(','.join(vertices)))
-                                    # print('\n"{}"'.format(text.description))
-                                    h,w,c=crop.shape
-                                    xd=int(w)/2
-                                    hi=int(h)/2
-                                    # wx,y=vertices[2]
-
-                                    num=re.findall("^\d+(\.\d+)?$|^\d+(\.\d+)?x10\d+$|^\d+\.$",text.description)
-                                    
-                                    if not len(num)==0 :
-
-                                        if xd<wx[2]:
-                                            length=text.description
-                                            print(length)
-                                            
-                                        elif wy[2]<hi:
-                                            
-                                            weight=text.description
-                                            print(weight)
-
-                                output_text.append("{} : {}".format("Length",length)) 
-                                output_text.append("{} : {}".format("Weight",weight)) 
-
-
-                            else:
-                                
-                                sim_ocr=crop.copy()
-                                config_ocr=detect_text(sim_ocr)
-                                date=None
-                                
-
-                                for text in config_ocr:
-
-                                    # print('\n"{}"'.format(text.description))
-                                    # vertices = (['({},{})'.format(vertex.x, vertex.y)
-                                    #             for vertex in text.bounding_poly.vertices])
-                                
-                                    d=re.findall('^\d.*24$',text.description)
-                                    
-
-                                    if not len(d)==0:
-                                        
-                                        date=text.description                   
-                                        print(date)
-
-                                output_text.append("{} : {}".format("DATE",date))      
-                        else:
-                            masked_image=crop.copy()
-
-
-
-                        ocr_text=detect_text(masked_image)
+                            crop=image[int(y1):int(y2),int(x1):int(x2)]
                     
-                    
-                        if model.names[int(cls)]== 'jewelry':                 
-                            
-                            barcode_value=scan(masked_image)
-                            print(barcode_value)
 
-                            if not barcode_value:
-                                
-                                
-                                for text in ocr_text:                
-                            
-                                    new_text=text.description.replace("BERNARDO","")
-                                    new_text=new_text.replace("Bernardo","")
-                                    new_text=new_text.replace("HandSample","")
-                                    new_text=new_text.replace("In-HouseSample","")
-                                    
-                                    new_text=new_text.replace("Sample","")
-                                    new_text=new_text.replace("Overseas","")
-                                    new_text=new_text.replace("OverseasSample","")
-                                    print(new_text)
-
-                                    if len(new_text)>=6:
-
-                                        x = re.findall("^\d{6,}$|^(?!(?:\d+|[A-Za-z]+)$)[A-Za-z0-9-]{1,}(?:[A-Za-z0-9-]{1,}){0,3}$", new_text)
-
-                                    
-                                        print(x)
-                                        if x:
-                                            new_barcode_value = x[0]
-                                            barcode_found = False
-                                            
-                                            for i, entry in enumerate(output_text):
-                                                if entry.startswith("Barcode :"):
-                                                    old_value = entry.split(":")[1]
-                                                    output_text[i] = "{} {}".format(entry, new_barcode_value)
-                                                    barcode_found = True
-                                                    barcode_value=old_value+new_barcode_value
-                                                    break
-                                            
-                                            if not barcode_found:
-                                                # output_text.append("Barcode : {}".format(new_barcode_value))
-                                                barcode_value=new_barcode_value
+                            if model.names[int(cls)]!= 'jewelry':
+                                masked_image=mask_image(crop) 
                                 
 
-                            output_text.append("Barcode : {}".format(barcode_value))
-                            filename=os.path.basename(image_path).split(".")[0]
-                            cv2.imwrite(os.path.join(output_dir,f"{barcode_value}_CROP_{filename}.jpg"),crop)
-                            
-                            # for text in ocr_text:                
-                                
+                                if model.names[int(cls)] == 'config_1':
 
-                            #     new_text=text.description.replace("BERNARDO","")
-                            #     new_text=new_text.replace("Bernardo","")
-                            #     new_text=new_text.replace("HandSample","")
-                            #     new_text=new_text.replace("In-HouseSample","")
-                                
-                            #     new_text=new_text.replace("Sample","")
-                            #     new_text=new_text.replace("Overseas","")
-                            #     new_text=new_text.replace("OverseasSample","")
-                            #     print("ppppppppppppp",new_text)
-
-                            #     if len(new_text)>=6:
-
-                            #         x = re.findall("^\d{6,}$|^(?!(?:\d+|[A-Za-z]+)$)[A-Za-z0-9-]{1,}(?:[A-Za-z0-9-]{1,}){0,3}$", new_text)
 
                                 
-                            #         print(x)
-                            #         if x:
-                            #             new_barcode_value = x[0]
-                            #             barcode_found = False
+                                    sim_ocr=crop.copy()
+                                
+                                    config_ocr=detect_text(sim_ocr) 
+                                    weight=0 
+                                    length=None  
+                                    for text in config_ocr:
+
+                                        # print('\n"{}"'.format(text.description))
+                                        vertices = (['({},{})'.format(vertex.x, vertex.y)
+                                                    for vertex in text.bounding_poly.vertices])
                                         
-                            #             for i, entry in enumerate(output_text):
-                            #                 if entry.startswith("Barcode :"):
-                            #                     old_value = entry.split(":")[1]
-                            #                     output_text[i] = "{} {}".format(entry, new_barcode_value)
-                            #                     barcode_found = True
-                            #                     barcode_value=old_value+new_barcode_value
-                            #                     break
+                                        # print(type(vertices))
+                                        wx = [vertex.x for vertex in text.bounding_poly.vertices]
+                                        wy = [vertex.y for vertex in text.bounding_poly.vertices]
                                         
-                            #             if not barcode_found:
-                            #                 output_text.append("Barcode : {}".format(new_barcode_value))
-                            #                 barcode_value=new_barcode_value
-
-                                    # found_barcode = None
-                                    # barcodes = []
-
-                                    # # Iterate through the list and process barcode entries
-                                    # for item in output_text:
-                                    #     if item.startswith('Barcode'):
-                                    #         if found_barcode is None:
-                                    #             found_barcode = item  # Store the first Barcode entry
-                                    #         else:
-                                    #             # Append the new Barcode value to the existing one
-                                    #             found_barcode += ', ' + item.split(': ')[1]
-                                    #     else:
-                                    #         barcodes.append(item)  # Add non-barcode items to a separate list
-
-                                    # # If a Barcode was found, insert it at the beginning of the list
-                                    # if found_barcode:
-                                    #     barcodes.insert(0, found_barcode)
-
-                                    # output_text = barcodes
-
-                                    
-                                
-
-
-                                    
-
-                                    # if not len(x)==0:
-                                    #     output_text.append("{} : {}".format("Barcode",x[0]))
-                                    #     barcode_value =x[0]
-                                    #     # print(x[0]) 
-                                    # print(output_text)
-                                
-                        
-                            
-                                    
-                        else:
-                            
-                            if ocr_text:
-                        
-                                ocr_text_list=[]
                                         
-                                if model.names[int(cls)]== 'config_2':
-                                    for idx,text in enumerate(ocr_text):
-                                        if idx!=0:
-                                            ocr_text_list.append(text.description)
-                                            
-                                    # ocr_text_list.append(text.description)
-                                    items=['SPR', 'SUM', 'FALL', 'HOL' ,'CHASE'] 
-                                    
-                                    # x = []
 
-                                    for word in ocr_text_list:
-                                        best_match = None
-                                        best_ratio = 0
+                                                        
+                                        # print('bounds: {}'.format(','.join(vertices)))
+                                        # print('\n"{}"'.format(text.description))
+                                        h,w,c=crop.shape
+                                        xd=int(w)/2
+                                        hi=int(h)/2
+                                        # wx,y=vertices[2]
+
+                                        num=re.findall("^\d+(\.\d+)?$|^\d+(\.\d+)?x10\d+$|^\d+\.$",text.description)
                                         
-                                        for item in items:
-                                            ratio = fuzz.ratio(word.lower(), item.lower())
-                                            if ratio > 65 and ratio > best_ratio:
-                                                best_match = item
-                                                best_ratio = ratio
-                                        
-                                        if best_match:
+                                        if not len(num)==0 :
 
-                                            output_text.append("SEASON: {}".format(best_match))
-                                            sesn=best_match
-
-                                            # val=(best_match)
-                                            # insert_in_db_details_season(conn,val)
-
-                                        # else:
-                                        #     output_text.append("SEASON: {}".format(word))
-                                    
-                                    year_list=['24', '25', '26']
-                                    y = []
-                                    for word in ocr_text_list:
-                                        for year in year_list:                                   
-                                            ratio = fuzz.ratio(word.lower(), year.lower())
-                                            if ratio > 60:  # You can adjust this threshold as needed
-                                                y.append(year)                                                                            
-                                                output_text.append("{} : {}".format("SEASON_Year",y[0])) 
+                                            if xd<wx[2]:
+                                                length=text.description
+                                                print(length)
                                                 
-                                                yr=y[0]
-                                                # insert_in_db_details_season_year(conn,val)                                       
-                                                break        
+                                            elif wy[2]<hi:
+                                                
+                                                weight=text.description
+                                                print(weight)
+
+                                    output_text.append("{} : {}".format("Length",length)) 
+                                    output_text.append("{} : {}".format("Weight",weight)) 
+
+
                                 else:
                                     
-                                    ocr_text_list=[]
-                                    for idx,text in enumerate(ocr_text):
-                                        if idx!=0:
-                                            ocr_text_list.append(text.description)
+                                    sim_ocr=crop.copy()
+                                    config_ocr=detect_text(sim_ocr)
+                                    date=None
+                                    
 
-                                    Type_list=['NK','ER','BR','HAIR','RNG','BAG','SUN', 'KEY','OTR']
-                                    t=[]
+                                    for text in config_ocr:
 
-                                    for word in ocr_text_list:
-                                        for types in Type_list:                                   
-                                            ratio = fuzz.ratio(word.lower(), types.lower())
-                                            if ratio > 60:  # You can adjust this threshold as needed
-                                                t.append(types)
-                                                category=t[0]
-                                                print(t[0])  
-
-                                                output_text.append("{} : {}".format("CATEGORY",category))                                        
-                                                break 
+                                        # print('\n"{}"'.format(text.description))
+                                        # vertices = (['({},{})'.format(vertex.x, vertex.y)
+                                        #             for vertex in text.bounding_poly.vertices])
+                                    
+                                        d=re.findall('^\d.*24$',text.description)
                                         
 
-                                    
-                                    ocr_text_list=[]
-                                    for idx,text in enumerate(ocr_text):
-                                        if idx!=0:
-                                            ocr_text_list.append(text.description)
-
-                                    designer_list=['OS','MOS','DOS']
-                                    des=[]
-
-                                    for designer in list(set(ocr_text_list)):
-                                        for design in designer_list:                                   
-                                            ratio = fuzz.ratio(designer.lower() , design.lower())
-                                            if ratio > 60:  # You can adjust this threshold as needed
-                                                des.append(design)
-                                                print(des[0])
-                                                desi=des[0]                                                                            
-                                                output_text.append("{} : {}".format("DESIGNER",desi))                                        
-                                                break                
+                                        if not len(d)==0:
                                             
+                                            date=text.description                   
+                                            print(date)
+
+                                    output_text.append("{} : {}".format("DATE",date))      
                             else:
-                                " No Text Detected in Masked image ! "
+                                masked_image=crop.copy()
 
 
-                    filename=os.path.basename(image_path)
-                    output_path=os.path.join(output_dir,f"{barcode_value}_FRONT_"+ filename )
-                    cv2.imwrite(output_path,image) 
 
-                
-
-                    #     output_text.append("{} : {}".format("Length",length))    
-                
-                    #     output_text.append("{} : {}".format("Weight",weight))    
-            
-                    #     output_text.append("{} : {}".format("Date",date))    
-                
-
-                    values=(type,barcode_value,count)
-                    
-                    insert_in_db(conn,values)
-                    type_value, bar_code, count_value = get_last_row_columns(conn)
-                    val=(barcode_value,length,weight,sesn,yr,category,desi,date)
-                    insert_in_db_details(conn,val)
-            
-
-
-            else:
-
-                
-                type="BACK"
-               
-                for box,cls,con in zip(boxes,classes,prob):
-                        if model.names[int(cls)]!= 'jewelry':
-                            return "","Empty Tag n no jewlery"
-
-                        print("backkkkkkkk")
-                        x1,y1,x2,y2=box
-                        crop=image[int(y1):int(y2),int(x1):int(x2)]
-                        masked_image=crop.copy()
-                        barcode_value=scan(masked_image)
+                            ocr_text=detect_text(masked_image)
                         
-                        if not barcode_value:
-                            
-                            for text in ocr_text:                
-                            
-                                    new_text=text.description.replace("BERNARDO","")
-                                    new_text=new_text.replace("Bernardo","")
-                                    new_text=new_text.replace("HandSample","")
-                                    new_text=new_text.replace("In-HouseSample","")
-                                    
-                                    new_text=new_text.replace("Sample","")
-                                    new_text=new_text.replace("Overseas","")
-                                    new_text=new_text.replace("OverseasSample","")
-                                    print(new_text)
-
-                                    if len(new_text)>=6:
-
-                                        x = re.findall("^\d{6,}$|^(?!(?:\d+|[A-Za-z]+)$)[A-Za-z0-9-]{1,}(?:[A-Za-z0-9-]{1,}){0,3}$", new_text)
-
-                                    
-                                        print(x)
-                                        if x:
-                                            new_barcode_value = x[0]
-                                            barcode_found = False
-                                            
-                                            for i, entry in enumerate(output_text):
-                                                if entry.startswith("Barcode :"):
-                                                    old_value = entry.split(":")[1]
-                                                    output_text[i] = "{} {}".format(entry, new_barcode_value)
-                                                    barcode_found = True
-                                                    barcode_value=old_value+new_barcode_value
-                                                    break
-                                            
-                                            if not barcode_found:
-                                                # output_text.append("Barcode : {}".format(new_barcode_value))
-                                                barcode_value=new_barcode_value
+                        
+                            if model.names[int(cls)]== 'jewelry':                 
                                 
+                                barcode_value=scan(masked_image)
+                                print(barcode_value)
 
-                            output_text.append("Barcode : {}".format(barcode_value))
-                            filename=os.path.basename(image_path).split(".")[0]
-                            cv2.imwrite(os.path.join(output_dir,f"{barcode_value}_CROP_{filename}.jpg"),crop)
+                                if not barcode_value:
+                                    
+                                    
+                                    for text in ocr_text:                
+                                
+                                        new_text=text.description.replace("BERNARDO","")
+                                        new_text=new_text.replace("Bernardo","")
+                                        new_text=new_text.replace("HandSample","")
+                                        new_text=new_text.replace("In-HouseSample","")
+                                        
+                                        new_text=new_text.replace("Sample","")
+                                        new_text=new_text.replace("Overseas","")
+                                        new_text=new_text.replace("OverseasSample","")
+                                        print(new_text)
 
-                        
-                        output_text.append("Barcode : {}".format(barcode_value))
+                                        if len(new_text)>=6:
 
-                        
+                                            x = re.findall("^\d{6,}$|^(?!(?:\d+|[A-Za-z]+)$)[A-Za-z0-9-]{1,}(?:[A-Za-z0-9-]{1,}){0,3}$", new_text)
 
+                                        
+                                            print(x)
+                                            if x:
+                                                new_barcode_value = x[0]
+                                                barcode_found = False
+                                                
+                                                for i, entry in enumerate(output_text):
+                                                    if entry.startswith("Barcode :"):
+                                                        old_value = entry.split(":")[1]
+                                                        output_text[i] = "{} {}".format(entry, new_barcode_value)
+                                                        barcode_found = True
+                                                        barcode_value=old_value+new_barcode_value
+                                                        break
+                                                
+                                                if not barcode_found:
+                                                    # output_text.append("Barcode : {}".format(new_barcode_value))
+                                                    barcode_value=new_barcode_value
+                                    
 
-
-
-                        # ocr_text=detect_text(masked_image)
-                        # for text in ocr_text:
-                        #     new_text=text.description.replace("BERNARDO","")
-                        #     new_text=new_text.replace("Bernardo","")
-                        #     new_text=new_text.replace("HandSample","")
-                        #     new_text=new_text.replace("In-HouseSample","")
+                                output_text.append("Barcode : {}".format(barcode_value))
+                                filename=os.path.basename(image_path).split(".")[0]
+                                cv2.imwrite(os.path.join(output_dir,f"{barcode_value}_CROP_{filename}.jpg"),crop)
+                                
+                                        
+                            else:
+                                
+                                if ocr_text:
                             
-                        #     new_text=new_text.replace("Sample","")
-                        #     new_text=new_text.replace("Overseas","")
-                        #     new_text=new_text.replace("OverseasSample","")
+                                    ocr_text_list=[]
+                                            
+                                    if model.names[int(cls)]== 'config_2':
+                                        for idx,text in enumerate(ocr_text):
+                                            if idx!=0:
+                                                ocr_text_list.append(text.description)
+                                                
+                                        # ocr_text_list.append(text.description)
+                                        items=['SPR', 'SUM', 'FALL', 'HOL' ,'CHASE'] 
+                                        
+                                        # x = []
 
-                        #     print("lolololololo",new_text)
-                        #     if len(new_text)>=6:
-                        #         x = re.findall("^\d{6,}$|^(?!(?:\d+|[A-Za-z]+)$)[A-Za-z0-9-]{1,}(?:[A-Za-z0-9-]{1,}){0,3}$", new_text)
-                        #         print("xxxxxxx",x)
-                        #         if x:
-                        #             print("TRUEEEE")
-                        #             new_barcode_value = x[0]
-                        #             barcode_found = False
-                                    
-                        #             for i, entry in enumerate(output_text):
-                        #                 if entry.startswith("Barcode :"):
-                        #                     old_value = entry.split(":")[1]
-                        #                     print("oooooldddddddd",old_value)
-                        #                     output_text[i] = "{} {}".format(entry, new_barcode_value)
-                        #                     barcode_found = True
-                        #                     barcode_value=old_value+new_barcode_value
-                        #                     break
-                                    
-                        #             if not barcode_found:
-                        #                 output_text.append("Barcode : {}".format(new_barcode_value))
-                        #                 barcode_value=new_barcode_value
+                                        for word in ocr_text_list:
+                                            best_match = None
+                                            best_ratio = 0
+                                            
+                                            for item in items:
+                                                ratio = fuzz.ratio(word.lower(), item.lower())
+                                                if ratio > 65 and ratio > best_ratio:
+                                                    best_match = item
+                                                    best_ratio = ratio
+                                            
+                                            if best_match:
 
-                                # if not len(x)==0:
-                                #     output_text.append("{} : {}".format("Barcode",x[0]))
-                                #     barcode_value =x[0]
-                                #     # print(x[0]) 
-                                # print(output_text)
-                        
-                
-                
-                print(output_text)
-                type_value, bar_code, count_value = get_last_row_columns(conn)
-                
-            
+                                                output_text.append("SEASON: {}".format(best_match))
+                                                sesn=best_match
 
-            
-                
-                if type_value == "BACK"  and  barcode_value == bar_code :
-                    # print(count_value)
-                    count_value+=1
-                    # print(count_value)
-                    values=(type,barcode_value,count_value)
+                                                # val=(best_match)
+                                                # insert_in_db_details_season(conn,val)
 
-                    insert_in_db(conn,values)
-                    # update_last_row_count(conn)
-                    _,_,count_val=get_last_row_columns(conn)
+                                            # else:
+                                            #     output_text.append("SEASON: {}".format(word))
+                                        
+                                        year_list=['24', '25', '26']
+                                        y = []
+                                        for word in ocr_text_list:
+                                            for year in year_list:                                   
+                                                ratio = fuzz.ratio(word.lower(), year.lower())
+                                                if ratio > 60:  # You can adjust this threshold as needed
+                                                    y.append(year)                                                                            
+                                                    output_text.append("{} : {}".format("SEASON_Year",y[0])) 
+                                                    
+                                                    yr=y[0]
+                                                    # insert_in_db_details_season_year(conn,val)                                       
+                                                    break        
+                                    else:
+                                        
+                                        ocr_text_list=[]
+                                        for idx,text in enumerate(ocr_text):
+                                            if idx!=0:
+                                                ocr_text_list.append(text.description)
+
+                                        Type_list=['NK','ER','BR','HAIR','RNG','BAG','SUN', 'KEY','OTR']
+                                        t=[]
+
+                                        for word in ocr_text_list:
+                                            for types in Type_list:                                   
+                                                ratio = fuzz.ratio(word.lower(), types.lower())
+                                                if ratio > 60:  # You can adjust this threshold as needed
+                                                    t.append(types)
+                                                    category=t[0]
+                                                    print(t[0])  
+
+                                                    output_text.append("{} : {}".format("CATEGORY",category))                                        
+                                                    break 
+                                            
+
+                                        
+                                        ocr_text_list=[]
+                                        for idx,text in enumerate(ocr_text):
+                                            if idx!=0:
+                                                ocr_text_list.append(text.description)
+
+                                        designer_list=['OS','MOS','DOS']
+                                        des=[]
+
+                                        for designer in list(set(ocr_text_list)):
+                                            for design in designer_list:                                   
+                                                ratio = fuzz.ratio(designer.lower() , design.lower())
+                                                if ratio > 60:  # You can adjust this threshold as needed
+                                                    des.append(design)
+                                                    print(des[0])
+                                                    desi=des[0]                                                                            
+                                                    output_text.append("{} : {}".format("DESIGNER",desi))                                        
+                                                    break                
+                                                
+                                else:
+                                    " No Text Detected in Masked image ! "
+
+
+                        filename=os.path.basename(image_path)
+                        output_path=os.path.join(output_dir,f"{barcode_value}_FRONT_"+ filename )
+                        cv2.imwrite(output_path,image) 
+
                     
-                    print("SAME Picture Uploaded ")
-                    filename = os.path.basename(image_path)
-                    output_path=os.path.join(output_dir,f"{barcode_value}_BACK-{count_val}_"+ filename )
-                    cv2.imwrite(output_path,image)
-            
+
+                        #     output_text.append("{} : {}".format("Length",length))    
+                    
+                        #     output_text.append("{} : {}".format("Weight",weight))    
+                
+                        #     output_text.append("{} : {}".format("Date",date))    
+                    
+
+                        values=(type,barcode_value,count)
+                        
+                        insert_in_db(conn,values)
+                        type_value, bar_code, count_value = get_last_row_columns(conn)
+                        val=(barcode_value,length,weight,sesn,yr,category,desi,date)
+                        insert_in_db_details(conn,val)
+                
+
+
                 else:
-                    # Reset the sequence number if the barcode is different
-                    filename=os.path.basename(image_path)
-                    output_path=os.path.join(output_dir,f"{barcode_value}_BACK_"+ filename )
-                    cv2.imwrite(output_path,image)
-                    # last_back_barcode = barcode_value
-                    count=0
-                    values=(type,barcode_value,count)
 
-                    insert_in_db(conn,values)
-                    get_last_row_columns(conn)
+                    
+                    type="BACK"
+                
+                    for box,cls,con in zip(boxes,classes,prob):
+                            if model.names[int(cls)]!= 'jewelry':
+                                return "","Empty Tag n no jewlery"
+
+                            print("backkkkkkkk")
+                            x1,y1,x2,y2=box
+                            crop=image[int(y1):int(y2),int(x1):int(x2)]
+                            masked_image=crop.copy()
+                            barcode_value=scan(masked_image)
+                            
+                            if not barcode_value:
+                                
+                                for text in ocr_text:                
+                                
+                                        new_text=text.description.replace("BERNARDO","")
+                                        new_text=new_text.replace("Bernardo","")
+                                        new_text=new_text.replace("HandSample","")
+                                        new_text=new_text.replace("In-HouseSample","")
+                                        
+                                        new_text=new_text.replace("Sample","")
+                                        new_text=new_text.replace("Overseas","")
+                                        new_text=new_text.replace("OverseasSample","")
+                                        print(new_text)
+
+                                        if len(new_text)>=6:
+
+                                            x = re.findall("^\d{6,}$|^(?!(?:\d+|[A-Za-z]+)$)[A-Za-z0-9-]{1,}(?:[A-Za-z0-9-]{1,}){0,3}$", new_text)
+
+                                        
+                                            print(x)
+                                            if x:
+                                                new_barcode_value = x[0]
+                                                barcode_found = False
+                                                
+                                                for i, entry in enumerate(output_text):
+                                                    if entry.startswith("Barcode :"):
+                                                        old_value = entry.split(":")[1]
+                                                        output_text[i] = "{} {}".format(entry, new_barcode_value)
+                                                        barcode_found = True
+                                                        barcode_value=old_value+new_barcode_value
+                                                        break
+                                                
+                                                if not barcode_found:
+                                                    # output_text.append("Barcode : {}".format(new_barcode_value))
+                                                    barcode_value=new_barcode_value
+                                    
+
+                                output_text.append("Barcode : {}".format(barcode_value))
+                                filename=os.path.basename(image_path).split(".")[0]
+                                cv2.imwrite(os.path.join(output_dir,f"{barcode_value}_CROP_{filename}.jpg"),crop)
+
+                            
+                            output_text.append("Barcode : {}".format(barcode_value))
+
+                            
+                            
+                    
+                    
+                    print(output_text)
+                    type_value, bar_code, count_value = get_last_row_columns(conn)
+                    
+                
+
+                
+                    
+                    if type_value == "BACK"  and  barcode_value == bar_code :
+                        # print(count_value)
+                        count_value+=1
+                        # print(count_value)
+                        values=(type,barcode_value,count_value)
+
+                        insert_in_db(conn,values)
+                        # update_last_row_count(conn)
+                        _,_,count_val=get_last_row_columns(conn)
+                        
+                        print("SAME Picture Uploaded ")
+                        filename = os.path.basename(image_path)
+                        output_path=os.path.join(output_dir,f"{barcode_value}_BACK-{count_val}_"+ filename )
+                        cv2.imwrite(output_path,image)
+                
+                    else:
+                        # Reset the sequence number if the barcode is different
+                        filename=os.path.basename(image_path)
+                        output_path=os.path.join(output_dir,f"{barcode_value}_BACK_"+ filename )
+                        cv2.imwrite(output_path,image)
+                        # last_back_barcode = barcode_value
+                        count=0
+                        values=(type,barcode_value,count)
+
+                        insert_in_db(conn,values)
+                        get_last_row_columns(conn)
 
 
 
 
-                val=(barcode_value,"NONE","NONE","NONE","NONE","NONE","NONE","NONE")
-                insert_in_db_details(conn,val)
-       
+                    val=(barcode_value,"NONE","NONE","NONE","NONE","NONE","NONE","NONE")
+                    insert_in_db_details(conn,val)
 
-      
-        print(output_text)
-    
 
+
+            print(output_text)
+
+
+            
+            filename=os.path.basename(image_path).split('.')[0]
+            output_path=os.path.join(output_dir,filename)
+            
+
+            with open(f"{output_path}_output.txt",'w',encoding="utf-8") as file:
+                for i in output_text:
+                    file.write(str(i) + '\n')
+    except Exception as e:
+        output_path=""
+        output_text=str(e)
+        error_image_path = os.path.join(output_dir, os.path.basename(image_path))
+        cv2.imwrite(error_image_path, image)
+        logging.error(f"Error processing image {image_path}: {str(e)}")
         
-        filename=os.path.basename(image_path).split('.')[0]
-        output_path=os.path.join(output_dir,filename)
-        
-
-        with open(f"{output_path}_output.txt",'w',encoding="utf-8") as file:
-            for i in output_text:
-                file.write(str(i) + '\n')
 
 
     return output_path,output_text
@@ -748,19 +689,20 @@ def prediction(image_path,output_dir,confidence,conn):
 
 # Main function taking image path/folder and desired Output dir 
     
-def main(image_path,output_dir,confidence=0.7,excel_file_name="output_data.xlsx"):
+def main(image_path,output_dir,confidence=0.7):
 
     conn=sqlite3.connect("Data.db")
     cursor=conn.cursor()
-    cursor.execute("DROP TABLE IF EXISTS details")
+    # cursor.execute("DROP TABLE IF EXISTS details")
 
-    cursor.execute('''CREATE TABLE IF NOT EXISTS info
+    cursor.execute('''CREATE TABLE IF NOT EXISTS Info
                    (Type TEXT,Barcode TEXT,count INTEGER)''')
     
-    cursor.execute('''CREATE TABLE IF NOT EXISTS details
+    cursor.execute('''CREATE TABLE IF NOT EXISTS Details
                 (Barcode TEXT,Length TEXT,Weight TEXT,Season TEXT,Season_Year,Category TEXT,Designer TEXT,Date TEXT)''')
     conn.commit()
-    clear_database(conn)
+    
+    ot_path=""
     
 
     
@@ -781,8 +723,12 @@ def main(image_path,output_dir,confidence=0.7,excel_file_name="output_data.xlsx"
     if os.path.isfile(image_path):
         try:
             ot_path , ot_text = prediction(image_path,output_dir,confidence,conn)
+            if ot_path=="":
+                setup_logging(ot_text,image_path)
         except Exception as e:
-            ot_path,ot_text= "",str(e)    
+            ot_path,ot_text= "",str(e)  
+            if ot_path=="":
+                setup_logging(ot_text,image_path)  
     # if it is dir then iterate each folder and file
     elif os.path.isdir(image_path):
         for root,_,files in os.walk(image_path):
@@ -790,9 +736,13 @@ def main(image_path,output_dir,confidence=0.7,excel_file_name="output_data.xlsx"
                 
                 full_path=os.path.join(root,file)
                 try:
-                    ot_path , ot_text = prediction(full_path,output_dir,confidence,conn)   
+                    ot_path , ot_text = prediction(full_path,output_dir,confidence,conn)
+                    if ot_path=="":
+                        setup_logging(ot_text,image_path)   
                 except Exception as e:
                     ot_path,ot_text="",str(e)
+                    if ot_path=="":
+                        setup_logging(ot_text,image_path)
     else:
         print('Invalid file or Path !')  
 
