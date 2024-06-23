@@ -1,7 +1,0 @@
-Barcode : 2401251556
-SEASON: FALL
-SEASON: CHASE
-SEASON_Year : 24
-Length : 16.75
-Weight : 105.
-DATE : None

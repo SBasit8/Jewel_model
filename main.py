@@ -317,74 +317,69 @@ def prediction(image_path,output_dir,confidence,conn):
                                 masked_image=mask_image(crop) 
                                 
 
-                                if model.names[int(cls)] == 'config_1':
+                                # if model.names[int(cls)] == 'config_1':
 
 
                                 
-                                    sim_ocr=crop.copy()
+                                #     sim_ocr=crop.copy()
                                 
-                                    config_ocr=detect_text(sim_ocr) 
-                                    weight=0 
-                                    length=None  
-                                    for text in config_ocr:
+                                #     config_ocr=detect_text(sim_ocr) 
+                                #     weight=0 
+                                #     length=None  
+                                #     for text in config_ocr:
 
-                                        # print('\n"{}"'.format(text.description))
-                                        vertices = (['({},{})'.format(vertex.x, vertex.y)
-                                                    for vertex in text.bounding_poly.vertices])
+                                #         # print('\n"{}"'.format(text.description))
+                                #         vertices = (['({},{})'.format(vertex.x, vertex.y)
+                                #                     for vertex in text.bounding_poly.vertices])
                                         
-                                        # print(type(vertices))
-                                        wx = [vertex.x for vertex in text.bounding_poly.vertices]
-                                        wy = [vertex.y for vertex in text.bounding_poly.vertices]
+                                #         # print(type(vertices))
+                                #         wx = [vertex.x for vertex in text.bounding_poly.vertices]
+                                #         wy = [vertex.y for vertex in text.bounding_poly.vertices]
                                         
                                         
 
                                                         
-                                        # print('bounds: {}'.format(','.join(vertices)))
-                                        # print('\n"{}"'.format(text.description))
-                                        h,w,c=crop.shape
-                                        xd=int(w)/2
-                                        hi=int(h)/2
-                                        # wx,y=vertices[2]
+                                #         # print('bounds: {}'.format(','.join(vertices)))
+                                #         # print('\n"{}"'.format(text.description))
+                                #         h,w,c=crop.shape
+                                #         xd=int(w)/2
+                                #         hi=int(h)/2
+                                #         # wx,y=vertices[2]
 
-                                        num=re.findall("^\d+(\.\d+)?$|^\d+(\.\d+)?x10\d+$|^\d+\.$",text.description)
+                                #         num=re.findall("^\d+(\.\d+)?$|^\d+(\.\d+)?x10\d+$|^\d+\.$",text.description)
                                         
-                                        if not len(num)==0 :
+                                #         if not len(num)==0 :
 
-                                            if xd<wx[2]:
-                                                length=text.description
-                                                print(length)
+                                #             if xd<wx[2]:
+                                #                 length=text.description
+                                #                 print(length)
                                                 
-                                            elif wy[2]<hi:
+                                #             elif wy[2]<hi:
                                                 
-                                                weight=text.description
-                                                print(weight)
+                                #                 weight=text.description
+                                #                 print(weight)
 
-                                    output_text.append("{} : {}".format("Length",length)) 
-                                    output_text.append("{} : {}".format("Weight",weight)) 
+                                #     output_text.append("{} : {}".format("Length",length)) 
+                                #     output_text.append("{} : {}".format("Weight",weight)) 
 
 
-                                else:
+                                # else:
                                     
-                                    sim_ocr=crop.copy()
-                                    config_ocr=detect_text(sim_ocr)
-                                    date=None
+                                #     sim_ocr=crop.copy()
+                                #     config_ocr=detect_text(sim_ocr)
+                                #     date=None
                                     
 
-                                    for text in config_ocr:
-
-                                        # print('\n"{}"'.format(text.description))
-                                        # vertices = (['({},{})'.format(vertex.x, vertex.y)
-                                        #             for vertex in text.bounding_poly.vertices])
+                                #     for text in config_ocr:
                                     
-                                        d=re.findall('^\d.*24$',text.description)
-                                        
-
-                                        if not len(d)==0:
+                                #         d=re.findall('^\d.*24$',text.description)
+                                
+                                #         if not len(d)==0:
                                             
-                                            date=text.description                   
-                                            print(date)
+                                #             date=text.description                   
+                                #             print(date)
 
-                                    output_text.append("{} : {}".format("DATE",date))      
+                                #     output_text.append("{} : {}".format("DATE",date))      
                             else:
                                 masked_image=crop.copy()
 
@@ -539,14 +534,7 @@ def prediction(image_path,output_dir,confidence,conn):
                         output_path=os.path.join(output_dir,f"{barcode_value}_FRONT_"+ filename )
                         cv2.imwrite(output_path,image) 
 
-                    
-
-                        #     output_text.append("{} : {}".format("Length",length))    
-                    
-                        #     output_text.append("{} : {}".format("Weight",weight))    
                 
-                        #     output_text.append("{} : {}".format("Date",date))    
-                    
 
                         values=(type,barcode_value,count)
                         
@@ -564,7 +552,7 @@ def prediction(image_path,output_dir,confidence,conn):
                 
                     for box,cls,con in zip(boxes,classes,prob):
                             if model.names[int(cls)]!= 'jewelry':
-                                return "","Empty Tag n no jewlery"
+                                return "","Empty Tag or no jewlery"
 
                             print("backkkkkkkk")
                             x1,y1,x2,y2=box

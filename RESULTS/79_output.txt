@@ -1,5 +1,0 @@
-Barcode : EEV1221X 020924
-SEASON: FALL
-Length : 75
-Weight : 0
-DATE : 2/12/24

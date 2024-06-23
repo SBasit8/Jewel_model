@@ -1,6 +1,0 @@
-Barcode : EEV1255 020724
-SEASON: FALL
-SEASON_Year : 24
-Length : None
-Weight : 0
-DATE : None

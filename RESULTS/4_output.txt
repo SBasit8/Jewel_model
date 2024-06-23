@@ -1,6 +1,0 @@
-Barcode : 2401251549
-SEASON: FALL
-SEASON_Year : 24
-Length : 55
-Weight : 37
-DATE : 125124

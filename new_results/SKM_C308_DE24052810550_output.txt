@@ -1,8 +1,5 @@
-DATE : 5129/24
 SEASON: HOL
 SEASON_Year : 24
 Barcode : TDM6599 052924
-Length : None
-Weight : 0
 CATEGORY : ER
 DESIGNER : OS
