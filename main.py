@@ -735,10 +735,19 @@ def main(image_path,output_dir,confidence=0.7):
         print('Invalid file or Path !')  
 
 
+    
 
     excel_file_name = 'output_data.xlsx'
     excel_file_path = os.path.join(output_dir, excel_file_name)
+    
+    if os.path.exists(excel_file_path):
+        os.remove(excel_file_path)  
+    
+        
+        
     write_db_to_csv(conn,excel_file_path)    
+
+
 
     conn.close()
 

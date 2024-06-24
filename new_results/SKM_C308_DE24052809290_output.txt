@@ -1,7 +1,3 @@
 Barcode : TDFW2393 052824
-Length : None
-Weight : 2
 CATEGORY : HAIR
-Length : None
-Weight : 0
 CATEGORY : SUN
