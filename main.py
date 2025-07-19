@@ -134,7 +134,7 @@ def insert_in_db(conn,values):
 
 model = YOLO("jewelery_weight.pt") # model weights
 
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = r'iron-module-419322-91b0842f4a7b.json'
+os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = r'//your API' # your valid api key
 client = vision.ImageAnnotatorClient()
 
 
